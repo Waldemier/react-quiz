@@ -1,6 +1,7 @@
 import React from 'react'
 import classes from './FinishedQuiz.module.css'
 import Button from '../UI/Button/Button'
+import {Link} from 'react-router-dom'
 
 //в index.html підлючили іконки (font awesome cdn), де в даному коді 'fa fa-times' це іконка хрестика, а fa fa-check галочки
 const FinishedQuiz = props => {
@@ -37,7 +38,10 @@ const FinishedQuiz = props => {
 
             <div>
                 <Button onClick={props.onRetry} type="primary">Пройти повторно</Button>
-                <Button type="success">Перейти до тестів</Button>
+
+                <Link to={"/"}>
+                    <Button type="success">Перейти до тестів</Button>
+                </Link>
             </div>
 
         </div>

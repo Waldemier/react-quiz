@@ -99,6 +99,11 @@ class Quiz extends Component {
         })
     }
 
+    componentDidMount() {
+        console.log(this.props.match)
+        console.info('Quiz ID: ', this.props.match.params.id) //через match доступаємось до властивостей url-адреси
+    }
+
     render(){
         return (
             <div className={classes.Quiz}>

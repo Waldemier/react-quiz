@@ -1,8 +1,13 @@
-import React, { Component } from 'react';
+import React, { Component } from 'react'
 import classes from './Drawer.module.css'
+import { NavLink } from 'react-router-dom'
 import Backdrop from '../../UI/Backdrop/Backdrop'
 
-const links = [1,2,3]
+const links = [
+    { to: "/", label: "Quizzes list", exact: true },
+    { to: "/auth", label: "Authentication", exact: true },
+    { to: "/create-quiz", label: "Create quiz", exact: true },
+]
 
 class Drawer extends Component {
 
@@ -10,7 +15,9 @@ class Drawer extends Component {
         return links.map((link, index) => {
             return (
                 <li key={index}>
-                    <a>Link {link}</a>
+                    <NavLink to={link.to} exact={link.exact} activeClassName={classes.active} onClick={this.props.onClose}>
+                        {link.label}
+                    </NavLink>
                 </li>
             )
         })
