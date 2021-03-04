@@ -28,5 +28,5 @@ export function validateForm(formControls) {
             isFormValid = formControls[control].valid && isFormValid;
         }
     }
-    return isFormValid;
+    return isFormValid; 
 }

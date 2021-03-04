@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import classes from './Quiz.module.css'
 import ActiveQuiz from '../../components/ActiveQuiz/ActiveQuiz.js'
 import FinishedQuiz from '../../components/FinishedQuiz/FinishedQuiz'
-
+import axios from '../../axios/axios-config'
+import Loader from '../../components/UI/Loader/Loader'
 class Quiz extends Component {
 
     state = {
@@ -10,30 +11,8 @@ class Quiz extends Component {
         isFinished: false,
         activeQuestion: 0,
         answerState: null, // {[id]: 'succes' or 'wrong'}
-        quiz: [
-            { 
-                id:1,
-                question: 'Якого кольору небо?',
-                rightAnswerId: 2,
-                answers: [
-                    {text: 'Чорний', id: 1},
-                    {text: 'Голубий', id: 2},
-                    {text: 'Червоний', id: 3},
-                    {text: 'Зелений', id: 4}
-                ]
-            },
-            { 
-                id:2,
-                question: 'В якому році був заснований Львів?',
-                rightAnswerId: 1,
-                answers: [
-                    {text: '1256', id: 1},
-                    {text: '1314', id: 2},
-                    {text: '1754', id: 3},
-                    {text: '1165', id: 4}
-                ]
-            }
-        ]
+        quiz: [],
+        loading: true
     }
     onAnswerClickHandler = (answerId) => {
         //console.log('Answer Id: ', answerId)
@@ -99,9 +78,22 @@ class Quiz extends Component {
         })
     }
 
-    componentDidMount() {
-        console.log(this.props.match)
-        console.info('Quiz ID: ', this.props.match.params.id) //через match доступаємось до властивостей url-адреси
+    async componentDidMount() {
+        try {
+
+            const response = await axios.get(`/quizzes/${this.props.match.params.id}.json`)
+            const quiz = response.data
+
+            this.setState({
+                quiz, loading: false
+            })
+
+        } catch (error) {
+
+            console.error(error)
+
+        }
+        //console.info('Quiz ID: ', this.props.match.params.id) //через match доступаємось до властивостей url-адреси
     }
 
     render(){
@@ -109,22 +101,29 @@ class Quiz extends Component {
             <div className={classes.Quiz}>
                 <div className={classes.QuizWrapper}>
                     <h1>Quiz</h1>
-                    {
-                        this.state.isFinished ? 
-                        <FinishedQuiz 
-                        results={this.state.results}
-                        quiz={this.state.quiz}
-                        onRetry={this.retryHandler}
-                        /> : 
-                        <ActiveQuiz 
-                        answers={this.state.quiz[this.state.activeQuestion].answers}
-                        question={this.state.quiz[this.state.activeQuestion].question} 
-                        onAnswerClick={this.onAnswerClickHandler}
-                        quizLength={this.state.quiz.length}
-                        answerNumber={this.state.activeQuestion + 1}
-                        state={this.state.answerState}
-                    />
-                    }      
+
+                    { 
+                    
+                        this.state.loading ? 
+                            <Loader />
+                        :
+                            this.state.isFinished ? 
+                            <FinishedQuiz 
+                            results={this.state.results}
+                            quiz={this.state.quiz}
+                            onRetry={this.retryHandler}
+                            /> 
+                            : 
+                            <ActiveQuiz 
+                            answers={this.state.quiz[this.state.activeQuestion].answers}
+                            question={this.state.quiz[this.state.activeQuestion].question} 
+                            onAnswerClick={this.onAnswerClickHandler}
+                            quizLength={this.state.quiz.length}
+                            answerNumber={this.state.activeQuestion + 1}
+                            state={this.state.answerState}
+                            />
+                    }
+    
                 </div>
             </div>
         )

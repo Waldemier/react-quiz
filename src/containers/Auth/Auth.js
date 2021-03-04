@@ -3,6 +3,8 @@ import classes from './Auth.module.css'
 import Button from '../../components/UI/Button/Button'
 import Input from '../../components/UI/Input/Input'
 import is from 'is_js'
+import axios from 'axios'
+
 export default class Auth extends React.Component {
 
     state = {
@@ -36,12 +38,30 @@ export default class Auth extends React.Component {
        
     }
 
-    loginHandler = () => {
-
+    loginHandler = async () => {
+        const fireData = {
+            email: this.state.formControls.email.value,
+            password: this.state.formControls.password.value,
+            returnSecureToken: true
+        }
+        try {
+            await axios.post('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyD29mdgX15egDMrH2_jlahjLvADYeDF-1k', fireData)
+        } catch (error) {
+            console.error(error)
+        }
     }
 
-    registerHandler = () => {
-
+    registerHandler = async () => {
+        const fireData = {
+            email: this.state.formControls.email.value,
+            password: this.state.formControls.password.value,
+            returnSecureToken: true
+        }
+        try {
+            await axios.post('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyD29mdgX15egDMrH2_jlahjLvADYeDF-1k', fireData)
+        } catch (error) {
+            console.error(error)
+        }
     }
 
     submitHandler = event => {
@@ -90,7 +110,7 @@ export default class Auth extends React.Component {
 
         let isFormValid = true;
 
-        Object.keys(formControls).map(name => {
+        Object.keys(formControls).forEach(name => {
             isFormValid = formControls[name].valid && isFormValid
         })
 
