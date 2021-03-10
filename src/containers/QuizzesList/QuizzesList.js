@@ -1,21 +1,15 @@
 import React from 'react'
 import classes from './QuizzesList.module.css'
 import {NavLink} from 'react-router-dom'
-import axios from '../../axios/axios-config'
 import Loader from '../../components/UI/Loader/Loader'
+import {fetchQuizzez} from '../../store/actions/quizActions'
+import {connect} from 'react-redux'
 
-export default class QuizzesList extends React.Component {
+class QuizzesList extends React.Component {
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            quizzes: [],
-            loading: true
-        };
-    }
-
+   
     renderQuizzes() {
-        return this.state.quizzes.map(quiz => {
+        return this.props.quizzes.map(quiz => {
             return (
                 <li key={quiz.id}>
                     <NavLink to={'/quiz/' + quiz.id}>
@@ -26,27 +20,9 @@ export default class QuizzesList extends React.Component {
         })
     }
     
-    async componentDidMount() { //Викл. після створення компоненту
-        try {
-            
-            const response = await axios.get('/quizzes.json')
-            const quizzes = []
-
-            Object.keys(response.data).forEach((key, index) => {
-                quizzes.push({
-                    id: key,
-                    name: `Test №${index+1}`
-                })
-            })
-
-            this.setState({quizzes, loading: false})
-
-        }
-        catch (err) {
-            console.error(err)
-        }
+    componentDidMount() {
+        this.props.fetchQuizzez()
     }
-
 
     render() {
         return (
@@ -55,7 +31,7 @@ export default class QuizzesList extends React.Component {
                     <h1>Quiz list page</h1>
                     
                     { 
-                        this.state.loading ? 
+                        this.props.loading && this.props.quizzes.length !== 0 ? 
                             <Loader />
                         :
                             <ul>
@@ -68,3 +44,18 @@ export default class QuizzesList extends React.Component {
         )
     }
 }
+
+function mapStateToProps(state) {
+    return {
+        quizzes: state.QuizReducer.quizzes,
+        loading: state.QuizReducer.loading
+    }
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        fetchQuizzez: () => dispatch(fetchQuizzez())
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(QuizzesList)

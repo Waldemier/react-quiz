@@ -2,98 +2,18 @@ import React, { Component } from 'react';
 import classes from './Quiz.module.css'
 import ActiveQuiz from '../../components/ActiveQuiz/ActiveQuiz.js'
 import FinishedQuiz from '../../components/FinishedQuiz/FinishedQuiz'
-import axios from '../../axios/axios-config'
 import Loader from '../../components/UI/Loader/Loader'
+import {connect} from 'react-redux'
+import {fetchQuizById, onQuizAnswerClickHandler, retryQuizHandler} from '../../store/actions/quizActions'
+
 class Quiz extends Component {
 
-    state = {
-        results: {}, // {[id]: success or wrong}
-        isFinished: false,
-        activeQuestion: 0,
-        answerState: null, // {[id]: 'succes' or 'wrong'}
-        quiz: [],
-        loading: true
-    }
-    onAnswerClickHandler = (answerId) => {
-        //console.log('Answer Id: ', answerId)
-        
-        //Перший раз коли натискаємо на правильну відповідь код йде далі,
-        // а якщо за цей час ще раз натискаємо на правильну відповідь, 
-        // то спрацьовує цей блок коду (Оскільки в answerState вже не null (див.реалізацію коду що нижче)),
-        // який запобігає просуванню подальних дій в цій функції.
-        if(this.state.answerState) { //fix double click to true answer
-            const key = Object.keys(this.state.answerState)[0]
-            //console.log(key)
-            if(this.state.answerState[key] === 'success') {
-                return
-            }
-        }
-
-        const question = this.state.quiz[this.state.activeQuestion]
-        const results = this.state.results
-
-        if(question.rightAnswerId === answerId) {
-
-            if(!results[question.id]) results[question.id] = 'success'
-
-            this.setState({
-                answerState: {[answerId]: 'success'},
-                results: results
-            })
-
-            const timeout = window.setTimeout(() => {
-                if(this.isQuizFinished()) {
-                    this.setState({
-                        isFinished: true
-                    })
-                }
-                else {
-                    this.setState({
-                        activeQuestion: this.state.activeQuestion + 1,
-                        answerState: null
-                    })
-                }
-                window.clearTimeout(timeout)
-            }, 1000)
-        }
-        else { 
-            results[question.id] = 'wrong'
-            this.setState({
-                answerState: {[answerId]: 'wrong'}, //[ключ]: значення === ключ: значення
-                results: results
-            })
-        }
+    componentDidMount() {
+        this.props.fetchQuizById(this.props.match.params.id)
     }
 
-    isQuizFinished() {
-        return this.state.activeQuestion + 1 === this.state.quiz.length
-    }
-
-    retryHandler = () => {
-        this.setState({
-            activeQuestion: 0,
-            answerState: null,
-            isFinished:false,
-            results: {}
-        })
-    }
-
-    async componentDidMount() {
-        try {
-
-            const response = await axios.get(`/quizzes/${this.props.match.params.id}.json`)
-            const quiz = response.data
-
-            this.setState({
-                quiz, loading: false
-            })
-
-        } catch (error) {
-
-            console.error(error)
-
-        }
-        //console.info('Quiz ID: ', this.props.match.params.id) //через match доступаємось до властивостей url-адреси
+    componentWillUnmount() { //Спрацює при виході з тесту на іншу сторінку
+        this.props.retryQuizHandler()
     }
 
     render(){
@@ -104,23 +24,23 @@ class Quiz extends Component {
 
                     { 
                     
-                        this.state.loading ? 
+                        this.props.loading || !this.props.quiz ? 
                             <Loader />
                         :
-                            this.state.isFinished ? 
+                            this.props.isFinished ? 
                             <FinishedQuiz 
-                            results={this.state.results}
-                            quiz={this.state.quiz}
-                            onRetry={this.retryHandler}
+                            results={this.props.results}
+                            quiz={this.props.quiz}
+                            onRetry={this.props.retryQuizHandler}
                             /> 
                             : 
                             <ActiveQuiz 
-                            answers={this.state.quiz[this.state.activeQuestion].answers}
-                            question={this.state.quiz[this.state.activeQuestion].question} 
-                            onAnswerClick={this.onAnswerClickHandler}
-                            quizLength={this.state.quiz.length}
-                            answerNumber={this.state.activeQuestion + 1}
-                            state={this.state.answerState}
+                            answers={this.props.quiz[this.props.activeQuestion].answers}
+                            question={this.props.quiz[this.props.activeQuestion].question} 
+                            onAnswerClick={this.props.onQuizAnswerClickHandler} //answerId ми передаємо в компоненті AnswerItem***
+                            quizLength={this.props.quiz.length}
+                            answerNumber={this.props.activeQuestion + 1}
+                            state={this.props.answerState}
                             />
                     }
     
@@ -130,4 +50,23 @@ class Quiz extends Component {
     }
 }
 
-export default Quiz;
+function mapStatoToProps(state) {
+    return {
+        results: state.QuizReducer.results, // {[id]: success or wrong}
+        isFinished: state.QuizReducer.isFinished,
+        activeQuestion: state.QuizReducer.activeQuestion,
+        answerState: state.QuizReducer.answerState, // {[id]: 'succes' or 'wrong'}
+        quiz: state.QuizReducer.quiz,
+        loading: state.QuizReducer.loading
+    }
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        fetchQuizById: id => dispatch(fetchQuizById(id)),
+        onQuizAnswerClickHandler: answerId => dispatch(onQuizAnswerClickHandler(answerId)), //answerId ми приймаємо з компоненту AnswerItem***
+        retryQuizHandler: () => dispatch(retryQuizHandler())
+    }
+}
+
+export default connect(mapStatoToProps, mapDispatchToProps)(Quiz);
