@@ -1,3 +1,8 @@
+# React + redux + firebase db
+## Deployed on firebase : https://react-quiz-d15db.web.app/  || ddux05@gmail.com firebase account
+### Deploying steps:  npm install -g firebase-tools , npm run build , firebase login , firebase init , firebase deploy
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
